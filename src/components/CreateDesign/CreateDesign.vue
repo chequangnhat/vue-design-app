@@ -1,0 +1,203 @@
+<template>
+  <div>
+    <canvas
+      ref="canvas"
+      @mousedown="handleMouseDown"
+      @mousemove="handleMouseMove"
+      @mouseup="handleMouseUp"
+    >
+      Canvas
+    </canvas>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, watch, onBeforeMount, onBeforeUpdate, onUpdated } from "vue";
+import rough from "roughjs";
+
+const generator = rough.generator();
+
+import { useToolStore } from '../../stores/toolState.js'
+
+const toolStore = useToolStore()
+
+const canvas = ref(null);
+let rc = null; // RoughCanvas instance
+
+const windowWidth = ref(window.innerWidth);
+const windowHeight = ref(window.innerHeight);
+
+const elements = ref([]);
+const action = ref("none");
+// const tool = ref("selection");
+const selectedElement = ref(null);
+
+const createElement = (id, x1, y1, x2, y2, type) => {
+  const roughElement =
+    type == "line"
+      ? generator.line(x1, y1, x2, y2, {roughness: 0})
+      : generator.rectangle(x1, y1, x2 - x1, y2 - y1,  {roughness: 0.5, fill: 'red',
+  hachureAngle: 60, // angle of hachure,
+  hachureGap: 8});
+
+  return { id, x1, y1, x2, y2, type, roughElement };
+};
+
+const isWithinElement = (x, y, element) => {
+  const { x1, x2, y1, y2, type } = element;
+  if (type == "rectangle") {
+    const minX = Math.min(x1, x2);
+    const maxX = Math.max(x1, x2);
+    const minY = Math.min(y1, y2);
+    const maxY = Math.max(y1, y2);
+
+    return x >= minX && x <= maxX && y >= minY && y <= maxY;
+  } else {
+    const a = { x: x1, y: y1 };
+    const b = { x: x2, y: y2 };
+    const c = { x, y };
+    const offset = distance(a, b) - (distance(a, c) + distance(b, c));
+    return Math.abs(offset) < 1;
+  }
+};
+
+const distance = (a, b) =>
+  Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+
+const getElementAtPosition = (x, y, elements) => {
+  return elements.find((element) => isWithinElement(x, y, element));
+};
+
+const exactMousePosition = (event) => {
+  const bounding = canvas.value.getBoundingClientRect();
+  // Calculate the mouse position relative to the canvas
+  const clientx = event.clientX - bounding.left;
+  const clienty = event.clientY - bounding.top;
+
+  // console.log('Mouse X:', clientx);
+  // console.log('Mouse Y:', clienty);
+  return { clientx: clientx, clienty: clienty };
+}
+
+const handleMouseDown = (event) => {
+
+  const { clientx: clientX, clienty: clientY } = exactMousePosition(event);
+
+  // console.log("mouse down", clientX, clientY)
+  if (toolStore.tool == "selection") {
+    //moving
+    const element = getElementAtPosition(clientX, clientY, elements.value);
+    if (element) {
+      const offsetX = clientX - element.x1;
+      const offsetY = clientY - element.y1;
+      selectedElement.value = { ...element, offsetX, offsetY };
+      action.value = "moving";
+    }
+  } else {
+    const id = elements.value.length;
+    const element = createElement(
+      id,
+      clientX,
+      clientY,
+      clientX,
+      clientY,
+      toolStore.tool
+    );
+    elements.value.push(element);
+
+    action.value = "drawing";
+  }
+};
+
+const handleMouseMove = (event) => {
+  // const { clientX, clientY } = event;
+  const { clientx: clientX, clienty: clientY } = exactMousePosition(event);
+
+
+  if (toolStore.tool == "selection") {
+    event.target.style.cursor = getElementAtPosition(
+      clientX,
+      clientY,
+      elements.value
+    )
+      ? "move"
+      : "default";
+  }
+
+  if (action.value == "drawing") {
+    const index = elements.value.length - 1;
+    const { x1, y1 } = elements.value[index];
+    updateElement(index, x1, y1, clientX, clientY, toolStore.tool);
+  } else if (action.value == "moving") {
+    const { id, x1, x2, y1, y2, type, offsetX, offsetY } =
+      selectedElement.value;
+    const width = x2 - x1;
+    const height = y2 - y1;
+    const newX1 = clientX - offsetX;
+    const newY1 = clientY - offsetY;
+    updateElement(id, newX1, newY1, newX1 + width, newY1 + height, type);
+  }
+};
+
+const handleMouseUp = () => {
+  action.value = false;
+  selectedElement.value = null;
+};
+
+const updateElement = (id, x1, y1, x2, y2, type) => {
+  const updatedElement = createElement(id, x1, y1, x2, y2, type);
+
+  const elementsCopy = [...elements.value];
+  elementsCopy[id] = updatedElement;
+  elements.value = elementsCopy;
+};
+
+function handleResize() {
+  console.log("handleResize call");
+  windowWidth.value = window.innerWidth;
+  windowHeight.value = window.innerHeight;
+}
+
+onMounted(() => {
+  window.addEventListener("resize", handleResize);
+  
+  rc = rough.canvas(canvas.value);
+  
+  // Set canvas size to fullscreen
+  canvas.value.width = windowWidth.value;
+  canvas.value.height = windowHeight.value;
+
+  // Set canvas size to fullscreen
+  // canvas.value.width = 500;
+  // canvas.value.height = 500;
+
+  // const rect = generator.line(50, 50, 200, 100)
+  // rc.draw(rect)
+});
+
+function redraw(){
+  //clear canvas
+  const ctx = canvas.value.getContext('2d');
+  ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
+
+  //redraw all elements
+  elements.value.forEach(({ roughElement }) => rc.draw(roughElement));
+}
+
+watch(windowWidth, () => {
+  canvas.value.width = windowWidth.value;
+  canvas.value.height = windowHeight.value;
+  redraw()
+});
+
+watch(elements, () => {
+  console.log("onUpdated watch")
+  redraw()
+});
+</script>
+
+<style>
+/* canvas {
+  background-color: aquamarine;
+} */
+</style>
