@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, onBeforeMount, onBeforeUpdate, onUpdated } from "vue";
+import { ref, onMounted, watch, onBeforeMount, onBeforeUpdate, onUpdated } from 'vue'
 
 import { useCounterStore } from '../../stores/counter.js'
 
@@ -14,8 +14,8 @@ const clickAdd = () => {
 }
 
 watch(counterStore, () => {
-  console.log("store change: ",counterStore.count)
-  console.log("arr change: ",counterStore.countArr)
+  console.log('store change: ', counterStore.count)
+  console.log('arr change: ', counterStore.countArr)
 })
 </script>
 
