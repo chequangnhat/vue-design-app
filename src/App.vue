@@ -16,6 +16,7 @@ const toImageClick = () => {
 <template>
   <TheHeader :toImageClick="toImageClick" />
   <CreateDesign />
+
 </template>
 
 <style>

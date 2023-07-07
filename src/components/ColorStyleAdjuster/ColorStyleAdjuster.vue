@@ -2,6 +2,7 @@
 import { ref, onMounted, watch, onBeforeMount, onBeforeUpdate, onUpdated } from 'vue'
 
 const arr = [1, 2, 3, 4, 5]
+const backgroundOption = ['red', 'green', 'yellow', 'blue', 'black']
 </script>
 
 <template>

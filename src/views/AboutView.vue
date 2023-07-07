@@ -1,15 +1,17 @@
+<script setup>
+import { useElementStore } from '../stores/elements.js'
+
+const elementstore = useElementStore()
+
+const { elements } = elementstore.elements
+elementstore.addNewElement(2)
+console.log(elements)
+</script>
+
 <template>
-  <div class="about">
-    <h1>This is an about page</h1>
-  </div>
+  hehe
 </template>
 
 <style>
-@media (min-width: 1024px) {
-  .about {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-  }
-}
+
 </style>

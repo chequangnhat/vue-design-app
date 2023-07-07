@@ -23,8 +23,12 @@ import rough from 'roughjs'
 const generator = rough.generator()
 
 import { useToolStore } from '../../stores/toolState.js'
+import { useElementStore } from '../../stores/elements.js'
 
 const toolStore = useToolStore()
+const elementstore = useElementStore()
+
+
 
 const canvas = ref(null)
 let rc = null // RoughCanvas instance
@@ -32,7 +36,7 @@ let rc = null // RoughCanvas instance
 const windowWidth = ref(window.innerWidth)
 const windowHeight = ref(window.innerHeight)
 
-const elements = ref([])
+// const elements = ref([])
 const action = ref('none')
 // const tool = ref("selection");
 const selectedElement = ref(null)
@@ -43,7 +47,6 @@ const createElement = (id, x1, y1, x2, y2, type) => {
       ? generator.line(x1, y1, x2, y2, { roughness: 0 })
       : generator.rectangle(x1, y1, x2 - x1, y2 - y1, {
           roughness: 0,
-          fill: 'red',
           hachureAngle: 60, // angle of hachure,
           hachureGap: 8
         })
@@ -81,18 +84,15 @@ const exactMousePosition = (event) => {
   const clientx = event.clientX - bounding.left
   const clienty = event.clientY - bounding.top
 
-  // console.log('Mouse X:', clientx);
-  // console.log('Mouse Y:', clienty);
   return { clientx: clientx, clienty: clienty }
 }
 
 const handleMouseDown = (event) => {
   const { clientx: clientX, clienty: clientY } = exactMousePosition(event)
 
-  // console.log("mouse down", clientX, clientY)
   if (toolStore.tool == 'selection') {
     //moving
-    const element = getElementAtPosition(clientX, clientY, elements.value)
+    const element = getElementAtPosition(clientX, clientY, elementstore.elements.elements)
     if (element) {
       const offsetX = clientX - element.x1
       const offsetY = clientY - element.y1
@@ -100,27 +100,28 @@ const handleMouseDown = (event) => {
       action.value = 'moving'
     }
   } else {
-    const id = elements.value.length
+    const id = elementstore.elements.length
     const element = createElement(id, clientX, clientY, clientX, clientY, toolStore.tool)
-    elements.value.push(element)
+    elementstore.addNewElement(element)
 
-    action.value = 'drawing'
+    action.value = 'drawing'  
   }
 }
 
 const handleMouseMove = (event) => {
+  console.log("mouse move")
   // const { clientX, clientY } = event;
   const { clientx: clientX, clienty: clientY } = exactMousePosition(event)
 
   if (toolStore.tool == 'selection') {
-    event.target.style.cursor = getElementAtPosition(clientX, clientY, elements.value)
+    event.target.style.cursor = getElementAtPosition(clientX, clientY, elementstore.elements.elements)
       ? 'move'
       : 'default'
   }
 
   if (action.value == 'drawing') {
-    const index = elements.value.length - 1
-    const { x1, y1 } = elements.value[index]
+    const index = elementstore.elements.elements.length - 1
+    const { x1, y1 } = elementstore.elements.elements[index]
     updateElement(index, x1, y1, clientX, clientY, toolStore.tool)
   } else if (action.value == 'moving') {
     const { id, x1, x2, y1, y2, type, offsetX, offsetY } = selectedElement.value
@@ -140,9 +141,9 @@ const handleMouseUp = () => {
 const updateElement = (id, x1, y1, x2, y2, type) => {
   const updatedElement = createElement(id, x1, y1, x2, y2, type)
 
-  const elementsCopy = [...elements.value]
+  const elementsCopy = [...elementstore.elements.elements]
   elementsCopy[id] = updatedElement
-  elements.value = elementsCopy
+  elementstore.setNewValueElement(elementsCopy)
 }
 
 function handleResize() {
@@ -174,7 +175,7 @@ function redraw() {
   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height)
 
   //redraw all elements
-  elements.value.forEach(({ roughElement }) => rc.draw(roughElement))
+  elementstore.elements.elements.forEach(({ roughElement }) => rc.draw(roughElement))
 }
 
 watch(windowWidth, () => {
@@ -183,8 +184,8 @@ watch(windowWidth, () => {
   redraw()
 })
 
-watch(elements, () => {
-  console.log('onUpdated watch')
+watch(elementstore, () => {
+  // console.log('onUpdated watch')
   redraw()
 })
 </script>
