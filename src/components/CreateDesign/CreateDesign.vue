@@ -28,8 +28,6 @@ import { useElementStore } from '../../stores/elements.js'
 const toolStore = useToolStore()
 const elementstore = useElementStore()
 
-
-
 const canvas = ref(null)
 let rc = null // RoughCanvas instance
 
@@ -40,12 +38,14 @@ const windowHeight = ref(window.innerHeight)
 const action = ref('none')
 // const tool = ref("selection");
 const selectedElement = ref(null)
+const stylingElement = ref(null)
 
 const createElement = (id, x1, y1, x2, y2, type) => {
   const roughElement =
     type == 'line'
-      ? generator.line(x1, y1, x2, y2, { roughness: 0 })
+      ? generator.line(x1, y1, x2, y2, { stroke: 'red', roughness: 0 })
       : generator.rectangle(x1, y1, x2 - x1, y2 - y1, {
+          fill: 'red',
           roughness: 0,
           hachureAngle: 60, // angle of hachure,
           hachureGap: 8
@@ -93,6 +93,9 @@ const handleMouseDown = (event) => {
   if (toolStore.tool == 'selection') {
     //moving
     const element = getElementAtPosition(clientX, clientY, elementstore.elements.elements)
+    elementstore.setStylingElement(element) //styling
+
+    console.log('element on mouse down, x, y', element.roughElement.shape, clientX, clientY)
     if (element) {
       const offsetX = clientX - element.x1
       const offsetY = clientY - element.y1
@@ -104,17 +107,21 @@ const handleMouseDown = (event) => {
     const element = createElement(id, clientX, clientY, clientX, clientY, toolStore.tool)
     elementstore.addNewElement(element)
 
-    action.value = 'drawing'  
+    action.value = 'drawing'
   }
 }
 
 const handleMouseMove = (event) => {
-  console.log("mouse move")
+  console.log('mouse move')
   // const { clientX, clientY } = event;
   const { clientx: clientX, clienty: clientY } = exactMousePosition(event)
 
   if (toolStore.tool == 'selection') {
-    event.target.style.cursor = getElementAtPosition(clientX, clientY, elementstore.elements.elements)
+    event.target.style.cursor = getElementAtPosition(
+      clientX,
+      clientY,
+      elementstore.elements.elements
+    )
       ? 'move'
       : 'default'
   }
@@ -135,6 +142,10 @@ const handleMouseMove = (event) => {
 
 const handleMouseUp = () => {
   action.value = false
+  if (elementstore.stylingElementSelected != null) {
+    return
+  }
+
   selectedElement.value = null
 }
 
@@ -184,10 +195,14 @@ watch(windowWidth, () => {
   redraw()
 })
 
-watch(elementstore, () => {
-  // console.log('onUpdated watch')
-  redraw()
-})
+watch(
+  elementstore,
+  () => {
+    console.log('onUpdated elementstore watch')
+    redraw()
+  },
+  { deep: true }
+)
 </script>
 
 <style>
