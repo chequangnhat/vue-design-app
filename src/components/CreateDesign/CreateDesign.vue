@@ -1,5 +1,5 @@
 <template>
-  <ColorStyleAdjuster />
+  <ColorStyleAdjuster v-if="elementstore.stylingElementSelected != null" />
   <div>
     <canvas
       id="element-to-convert"
@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onBeforeMount, onBeforeUpdate, onUpdated } from 'vue'
+import { ref, onMounted, watch, onUpdated } from 'vue'
 
 import ColorStyleAdjuster from '../ColorStyleAdjuster/ColorStyleAdjuster.vue'
 
@@ -34,22 +34,22 @@ let rc = null // RoughCanvas instance
 const windowWidth = ref(window.innerWidth)
 const windowHeight = ref(window.innerHeight)
 
-// const elements = ref([])
 const action = ref('none')
-// const tool = ref("selection");
 const selectedElement = ref(null)
-const stylingElement = ref(null)
 
-const createElement = (id, x1, y1, x2, y2, type) => {
+const createElement = (
+  id,
+  x1,
+  y1,
+  x2,
+  y2,
+  type,
+  options = { fill: 'white', fillStyle: 'hachure' }
+) => {
   const roughElement =
     type == 'line'
-      ? generator.line(x1, y1, x2, y2, { stroke: 'red', roughness: 0 })
-      : generator.rectangle(x1, y1, x2 - x1, y2 - y1, {
-          fill: 'red',
-          roughness: 0,
-          hachureAngle: 60, // angle of hachure,
-          hachureGap: 8
-        })
+      ? generator.line(x1, y1, x2, y2, options)
+      : generator.rectangle(x1, y1, x2 - x1, y2 - y1, options)
 
   return { id, x1, y1, x2, y2, type, roughElement }
 }
@@ -95,12 +95,14 @@ const handleMouseDown = (event) => {
     const element = getElementAtPosition(clientX, clientY, elementstore.elements.elements)
     elementstore.setStylingElement(element) //styling
 
-    console.log('element on mouse down, x, y', element.roughElement.shape, clientX, clientY)
+    // console.log('element on mouse down, x, y', element.roughElement.shape, clientX, clientY)
     if (element) {
       const offsetX = clientX - element.x1
       const offsetY = clientY - element.y1
       selectedElement.value = { ...element, offsetX, offsetY }
       action.value = 'moving'
+    } else {
+      elementstore.setStylingElement(null)
     }
   } else {
     const id = elementstore.elements.length
@@ -112,7 +114,7 @@ const handleMouseDown = (event) => {
 }
 
 const handleMouseMove = (event) => {
-  console.log('mouse move')
+  // console.log('mouse move')
   // const { clientX, clientY } = event;
   const { clientx: clientX, clienty: clientY } = exactMousePosition(event)
 
@@ -128,15 +130,20 @@ const handleMouseMove = (event) => {
 
   if (action.value == 'drawing') {
     const index = elementstore.elements.elements.length - 1
-    const { x1, y1 } = elementstore.elements.elements[index]
-    updateElement(index, x1, y1, clientX, clientY, toolStore.tool)
+    const { x1, y1, roughElement } = elementstore.elements.elements[index]
+    // console.log('check mouse move drawing element',elementstore.elements.elements[index])
+    const options = roughElement.options
+    updateElement(index, x1, y1, clientX, clientY, toolStore.tool, options)
   } else if (action.value == 'moving') {
-    const { id, x1, x2, y1, y2, type, offsetX, offsetY } = selectedElement.value
+    const { id, x1, x2, y1, y2, type, offsetX, offsetY, roughElement } = selectedElement.value
+    // console.log('moving type element', type)
     const width = x2 - x1
     const height = y2 - y1
     const newX1 = clientX - offsetX
     const newY1 = clientY - offsetY
-    updateElement(id, newX1, newY1, newX1 + width, newY1 + height, type)
+    const options = roughElement.options
+    // console.log('options element', options)
+    updateElement(id, newX1, newY1, newX1 + width, newY1 + height, type, options)
   }
 }
 
@@ -149,8 +156,8 @@ const handleMouseUp = () => {
   selectedElement.value = null
 }
 
-const updateElement = (id, x1, y1, x2, y2, type) => {
-  const updatedElement = createElement(id, x1, y1, x2, y2, type)
+const updateElement = (id, x1, y1, x2, y2, type, options) => {
+  const updatedElement = createElement(id, x1, y1, x2, y2, type, options)
 
   const elementsCopy = [...elementstore.elements.elements]
   elementsCopy[id] = updatedElement
@@ -158,7 +165,7 @@ const updateElement = (id, x1, y1, x2, y2, type) => {
 }
 
 function handleResize() {
-  console.log('handleResize call')
+  // console.log('handleResize call')
   windowWidth.value = window.innerWidth
   windowHeight.value = window.innerHeight
 }
@@ -171,13 +178,6 @@ onMounted(() => {
   // Set canvas size to fullscreen
   canvas.value.width = windowWidth.value
   canvas.value.height = windowHeight.value
-
-  // Set canvas size to fullscreen
-  // canvas.value.width = 500;
-  // canvas.value.height = 500;
-
-  // const rect = generator.line(50, 50, 200, 100)
-  // rc.draw(rect)
 })
 
 function redraw() {
@@ -186,7 +186,10 @@ function redraw() {
   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height)
 
   //redraw all elements
-  elementstore.elements.elements.forEach(({ roughElement }) => rc.draw(roughElement))
+  elementstore.elements.elements.forEach(({ roughElement }) => {
+    console.log('roughElement redraw', roughElement)
+    rc.draw(roughElement)
+  })
 }
 
 watch(windowWidth, () => {
@@ -198,15 +201,18 @@ watch(windowWidth, () => {
 watch(
   elementstore,
   () => {
-    console.log('onUpdated elementstore watch')
+    // console.log('onUpdated elementstore watch')
+    // console.log('selectedElement', selectedElement.value)
+    // console.log('onUpdated elementstore', elementstore.elements)
     redraw()
   },
   { deep: true }
 )
+
+onUpdated(() => {
+  console.log('onUpdated elementstore')
+  redraw()
+})
 </script>
 
-<style>
-/* canvas {
-  background-color: aquamarine;
-} */
-</style>
+<style></style>

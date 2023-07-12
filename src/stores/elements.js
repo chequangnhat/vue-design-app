@@ -13,30 +13,43 @@ export const useElementStore = defineStore('elements', () => {
     elements.elements = newElements
   }
 
-  function setStylingElement( value) {
+  function setStylingElement(value) {
     console.log('setStylingElement call')
     stylingElementSelected.value = value
 
-    console.log('setStylingElement',stylingElementSelected.value)
-  }
-  //.prototype.hasOwnProperty.call(foo, "bar");
-
-  // function updateAttribute( attributeName, attributeValue) {
-  //   if (Object.prototype.hasOwnProperty.call(stylingElement.value, "fill")) {
-  //     // Attribute already exists, update its value
-  //     stylingElement.value[attributeName] = attributeValue;
-  //   } else {
-  //     // Attribute doesn't exist, add it to the object
-  //     stylingElement.value[attributeName] = attributeValue;
-  //   }
-  // }
-
-  function updateAttribute( element, attributeName, attributeValue ) {
-    console.log("updateAttribute",attributeName, attributeValue)
-    // console.log(elements.elements[0])
-    // console.log(elements.elements)
-    // elements.elements[0]["roughElement"]["options"][attributeName] = attributeValue
+    console.log('setStylingElement', stylingElementSelected.value)
   }
 
-  return { elements, stylingElementSelected, addNewElement, setNewValueElement, setStylingElement, updateAttribute }
+  function updateAttribute(attributeName, attributeValue) {
+    const index =
+      stylingElementSelected.value == null
+        ? -1
+        : elements.elements.findIndex((item) => {
+            return Object.keys(item).every((key) => item[key] === stylingElementSelected.value[key])
+          })
+
+    console.log('updateAttribute', attributeName, attributeValue)
+    console.log('index found', index)
+    if (index >= 0) {
+      // console.log('element at index', elements.elements[index])
+      const newEl = elements.elements[index]
+      newEl['roughElement']['options'][attributeName] = attributeValue
+
+      const elementsCopy = [...elements.elements]
+      elementsCopy[index] = newEl
+
+      setNewValueElement(elementsCopy)
+
+      console.log('element at index', elements.elements[index])
+    }
+  }
+
+  return {
+    elements,
+    stylingElementSelected,
+    addNewElement,
+    setNewValueElement,
+    setStylingElement,
+    updateAttribute
+  }
 })
