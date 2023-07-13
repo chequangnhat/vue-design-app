@@ -44,7 +44,7 @@ const createElement = (
   x2,
   y2,
   type,
-  options = { fill: 'white', fillStyle: 'hachure' }
+  options = { fill: 'white', fillStyle: 'hachure', roughness: 2 }
 ) => {
   const roughElement =
     type == 'line'
@@ -180,14 +180,14 @@ onMounted(() => {
   canvas.value.height = windowHeight.value
 })
 
-function redraw() {
+function redraw(listElements) {
   //clear canvas
   const ctx = canvas.value.getContext('2d')
   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height)
 
   //redraw all elements
-  elementstore.elements.elements.forEach(({ roughElement }) => {
-    console.log('roughElement redraw', roughElement)
+  console.log('redraw all elements',elementstore.elements.elements)
+  listElements.forEach(({ roughElement }) => {
     rc.draw(roughElement)
   })
 }
@@ -195,7 +195,7 @@ function redraw() {
 watch(windowWidth, () => {
   canvas.value.width = windowWidth.value
   canvas.value.height = windowHeight.value
-  redraw()
+  redraw(elementstore.elements.elements)
 })
 
 watch(
@@ -203,16 +203,16 @@ watch(
   () => {
     // console.log('onUpdated elementstore watch')
     // console.log('selectedElement', selectedElement.value)
-    // console.log('onUpdated elementstore', elementstore.elements)
-    redraw()
+    console.log('watch elementstore', elementstore.elements)
+    redraw(elementstore.elements.elements)
   },
-  { deep: true }
+  // { deep: true }
 )
 
-onUpdated(() => {
-  console.log('onUpdated elementstore')
-  redraw()
-})
+// onUpdated(() => {
+//   console.log('onUpdated elementstore')
+//   redraw()
+// })
 </script>
 
 <style></style>

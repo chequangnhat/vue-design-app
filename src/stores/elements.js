@@ -1,4 +1,4 @@
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive } from 'vue'
 import { defineStore } from 'pinia'
 
 export const useElementStore = defineStore('elements', () => {
@@ -10,7 +10,12 @@ export const useElementStore = defineStore('elements', () => {
   }
 
   function setNewValueElement(newElements) {
-    elements.elements = newElements
+    return elements.elements = newElements
+  }
+  function setNewValueElementAtIndex( index ,newElement ) {
+    const elementsCopy = [...elements.elements]
+    elementsCopy[index] = newElement
+    return setNewValueElement(elementsCopy)
   }
 
   function setStylingElement(value) {
@@ -28,21 +33,22 @@ export const useElementStore = defineStore('elements', () => {
             return Object.keys(item).every((key) => item[key] === stylingElementSelected.value[key])
           })
 
-    console.log('updateAttribute', attributeName, attributeValue)
+    // console.log('updateAttribute', attributeName, attributeValue)
     console.log('index found', index)
     if (index >= 0) {
       // console.log('element at index', elements.elements[index])
-      const newEl = elements.elements[index]
-      newEl['roughElement']['options'][attributeName] = attributeValue
+      const newElement = elements.elements[index]
+      newElement['roughElement']['options'][attributeName] = attributeValue
 
-      const elementsCopy = [...elements.elements]
-      elementsCopy[index] = newEl
+      // delete elements.elements[index]['roughElement']['options']['hachureAngle']
+      // delete elements.elements[index]['roughElement']['options']['hachureGap']
 
-      setNewValueElement(elementsCopy)
+      // newElement['roughElement']['options']['hachureGap'] = 0
 
-      console.log('element at index', elements.elements[index])
+      console.log('element at index update', elements.elements[index])
+      return setNewValueElementAtIndex( index, newElement)
+      }
     }
-  }
 
   return {
     elements,

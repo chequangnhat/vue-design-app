@@ -81,13 +81,13 @@ const adjust = (attributeName, attributeValue) => {
         <div class="box-border pl-2 text-sm text-slate-500 text-left mb-1">Roughness</div>
         <div class="flex w-full h-7">
           <div class="flex justify-start px-2 items-center w-3/4">
-            <div class="w-5 h-5 bg-blue-500 rounded-sm mr-2" @click="adjust('fillStyle', 'hachure')">
+            <div class="w-5 h-5 bg-blue-500 rounded-sm mr-2" @click="adjust('roughness', 0)">
               <img class="w-5 h-5" :src="imgRoughness0" alt="" />
             </div>
-            <div class="w-5 h-5 bg-yellow-500 rounded-sm mr-2" @click="adjust('fillStyle', 'solid')">
+            <div class="w-5 h-5 bg-yellow-500 rounded-sm mr-2" @click="adjust('roughness', 1 )">
               <img class="w-5 h-5" :src="imgRoughness1" alt="" />
             </div>
-            <div class="w-5 h-5 bg-yellow-500 rounded-sm" @click="adjust('fillStyle', 'solid')">
+            <div class="w-5 h-5 bg-yellow-500 rounded-sm" @click="adjust('roughness', 2 )">
               <img class="w-5 h-5" :src="imgRoughness2" alt="" />
             </div>
           </div>
