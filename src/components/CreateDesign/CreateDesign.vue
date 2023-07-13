@@ -187,8 +187,19 @@ function redraw(listElements) {
 
   //redraw all elements
   console.log('redraw all elements',elementstore.elements.elements)
-  listElements.forEach(({ roughElement }) => {
-    rc.draw(roughElement)
+  listElements.forEach((element) => {
+    console.log('drawing element',element )
+    const { x1, y1, x2, y2, roughElement  } = element
+    if( roughElement.shape == 'rectangle'){
+      console.log('rec')
+      const newRoughElement = generator.rectangle( x1, y1, x2 - x1, y2 - y1, roughElement['options'] )
+      rc.draw(newRoughElement)
+    }else if( roughElement.shape == 'line' ){
+      console.log('line')
+      const newRoughElement = generator.line( x1, y1, x2, y2, roughElement['options'] )
+      rc.draw(newRoughElement)
+    }
+    
   })
 }
 
