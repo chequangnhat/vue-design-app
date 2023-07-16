@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onUpdated } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 
 import ColorStyleAdjuster from '../ColorStyleAdjuster/ColorStyleAdjuster.vue'
 
@@ -44,13 +44,16 @@ const createElement = (
   x2,
   y2,
   type,
-  options = { fill: 'white', fillStyle: 'hachure', roughness: 2 }
+  options = { fill: 'white', fillStyle: 'hachure', roughness: 0 }
 ) => {
-  const roughElement =
-    type == 'line'
-      ? generator.line(x1, y1, x2, y2, options)
-      : generator.rectangle(x1, y1, x2 - x1, y2 - y1, options)
-
+  var roughElement = null
+    if (type == 'line'){
+      roughElement = generator.line(x1, y1, x2, y2, options)
+    } else if ( type == 'rectangle' ) {
+      roughElement = generator.rectangle(x1, y1, x2 - x1, y2 - y1, options)
+    } else if ( type == 'circle' ) {
+      roughElement = generator.circle(x1, y1, distance({ x: x1, y: y1 }, { x: x2 - x1, y: y2 - y1 }) , options)
+    }
   return { id, x1, y1, x2, y2, type, roughElement }
 }
 
@@ -114,8 +117,6 @@ const handleMouseDown = (event) => {
 }
 
 const handleMouseMove = (event) => {
-  // console.log('mouse move')
-  // const { clientX, clientY } = event;
   const { clientx: clientX, clienty: clientY } = exactMousePosition(event)
 
   if (toolStore.tool == 'selection') {
@@ -130,25 +131,27 @@ const handleMouseMove = (event) => {
 
   if (action.value == 'drawing') {
     const index = elementstore.elements.elements.length - 1
+
     const { x1, y1, roughElement } = elementstore.elements.elements[index]
-    // console.log('check mouse move drawing element',elementstore.elements.elements[index])
     const options = roughElement.options
+
     updateElement(index, x1, y1, clientX, clientY, toolStore.tool, options)
   } else if (action.value == 'moving') {
     const { id, x1, x2, y1, y2, type, offsetX, offsetY, roughElement } = selectedElement.value
-    // console.log('moving type element', type)
+
     const width = x2 - x1
     const height = y2 - y1
     const newX1 = clientX - offsetX
     const newY1 = clientY - offsetY
     const options = roughElement.options
-    // console.log('options element', options)
+
     updateElement(id, newX1, newY1, newX1 + width, newY1 + height, type, options)
   }
 }
 
 const handleMouseUp = () => {
   action.value = false
+
   if (elementstore.stylingElementSelected != null) {
     return
   }
@@ -158,14 +161,13 @@ const handleMouseUp = () => {
 
 const updateElement = (id, x1, y1, x2, y2, type, options) => {
   const updatedElement = createElement(id, x1, y1, x2, y2, type, options)
-
   const elementsCopy = [...elementstore.elements.elements]
   elementsCopy[id] = updatedElement
+
   elementstore.setNewValueElement(elementsCopy)
 }
 
 function handleResize() {
-  // console.log('handleResize call')
   windowWidth.value = window.innerWidth
   windowHeight.value = window.innerHeight
 }
@@ -186,20 +188,22 @@ function redraw(listElements) {
   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height)
 
   //redraw all elements
-  console.log('redraw all elements',elementstore.elements.elements)
+  console.log('redraw all elements', elementstore.elements.elements)
+
   listElements.forEach((element) => {
-    console.log('drawing element',element )
-    const { x1, y1, x2, y2, roughElement  } = element
-    if( roughElement.shape == 'rectangle'){
-      console.log('rec')
-      const newRoughElement = generator.rectangle( x1, y1, x2 - x1, y2 - y1, roughElement['options'] )
+    console.log('drawing element', element)
+    const { x1, y1, x2, y2, roughElement } = element
+
+    if (roughElement.shape == 'rectangle') {
+      const newRoughElement = generator.rectangle(x1, y1, x2 - x1, y2 - y1, roughElement['options'])
       rc.draw(newRoughElement)
-    }else if( roughElement.shape == 'line' ){
-      console.log('line')
-      const newRoughElement = generator.line( x1, y1, x2, y2, roughElement['options'] )
+    } else if (roughElement.shape == 'line') {
+      const newRoughElement = generator.line(x1, y1, x2, y2, roughElement['options'])
+      rc.draw(newRoughElement)
+    } else if (roughElement.shape == 'circle') {
+      const newRoughElement = generator.circle(x1, y1, x2, y2, roughElement['options'])
       rc.draw(newRoughElement)
     }
-    
   })
 }
 
@@ -209,21 +213,10 @@ watch(windowWidth, () => {
   redraw(elementstore.elements.elements)
 })
 
-watch(
-  elementstore,
-  () => {
-    // console.log('onUpdated elementstore watch')
-    // console.log('selectedElement', selectedElement.value)
-    console.log('watch elementstore', elementstore.elements)
-    redraw(elementstore.elements.elements)
-  },
-  // { deep: true }
-)
-
-// onUpdated(() => {
-//   console.log('onUpdated elementstore')
-//   redraw()
-// })
+watch(elementstore, () => {
+  console.log('watch elementstore', elementstore.elements)
+  redraw(elementstore.elements.elements)
+})
 </script>
 
 <style></style>

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, onBeforeMount, onBeforeUpdate, onUpdated } from 'vue'
+import { watch } from 'vue'
 
 import { useCounterStore } from '../../stores/counter.js'
 

@@ -1,5 +1,4 @@
 <script setup>
-import { ref, onMounted, watch, onBeforeMount, onBeforeUpdate, onUpdated } from 'vue'
 import { useElementStore } from '../../stores/elements.js'
 
 import imgHachure from '../../assets/icon/hachure.jpg'
@@ -84,10 +83,13 @@ const adjust = (attributeName, attributeValue) => {
             <div class="w-5 h-5 bg-blue-500 rounded-sm mr-2" @click="adjust('roughness', 0)">
               <img class="w-5 h-5" :src="imgRoughness0" alt="" />
             </div>
-            <div class="w-5 h-5 bg-yellow-500 rounded-sm mr-2" @click="adjust('roughness', 1 )">
+            <div class="w-5 h-5 bg-yellow-500 rounded-sm mr-2" @click="adjust('roughness', 3 )">
               <img class="w-5 h-5" :src="imgRoughness1" alt="" />
             </div>
-            <div class="w-5 h-5 bg-yellow-500 rounded-sm" @click="adjust('roughness', 2 )">
+            <div class="w-5 h-5 bg-yellow-500 rounded-sm mr-2" @click="adjust('roughness', 7 )">
+              <img class="w-5 h-5" :src="imgRoughness2" alt="" />
+            </div>
+            <div class="w-5 h-5 bg-yellow-500 rounded-sm" @click="adjust('roughness', 10 )">
               <img class="w-5 h-5" :src="imgRoughness2" alt="" />
             </div>
           </div>

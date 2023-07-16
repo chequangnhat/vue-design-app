@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, onBeforeMount, onBeforeUpdate, onUpdated } from 'vue'
+import { ref } from 'vue'
 import { useToolStore } from '../../stores/toolState.js'
 
 const toolStore = useToolStore()
@@ -18,8 +18,10 @@ const setToolType = (toolType) => {
     activeButton.value = 1
   } else if (toolType == 'line') {
     activeButton.value = 2
-  } else {
+  } else if (toolType == 'rectangle') {
     activeButton.value = 3
+  } else if (toolType == 'circle') {
+    activeButton.value = 4
   }
 }
 </script>
@@ -57,6 +59,13 @@ const setToolType = (toolType) => {
       >
         <font-awesome-icon :icon="['far', 'square']" />
       </button>
+      <button
+        @click="setToolType('circle')"
+        class="mr-2"
+        :class="activeButton === 4 ? ' text-violet-300' : ' '"
+      >
+      <font-awesome-icon :icon="['far', 'circle']" />
+      </button>
       <button @click="callToImageClick()" class="ml-auto mr-2">
         <font-awesome-icon :icon="['fas', 'download']" />
       </button>
@@ -67,5 +76,4 @@ const setToolType = (toolType) => {
       <font-awesome-icon icon="user" />
     </div>
   </div>
-  <!-- hello -->
 </template>
