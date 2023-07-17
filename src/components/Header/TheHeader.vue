@@ -62,7 +62,7 @@ const setToolType = (toolType) => {
       </button>
     </div>
     <div
-      class="h-10 w-10 text-center flex justify-center items-center border border-slate-200 rounded-lg text-purple-500"
+      class="h-10 w-10 text-center flex justify-center items-center border border-slate-200 rounded-lg text-purple-500 mr-4"
     >
       <font-awesome-icon icon="user" />
     </div>

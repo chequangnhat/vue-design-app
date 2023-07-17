@@ -1,8 +1,8 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import TheHeader from './components/Header/TheHeader.vue'
-import CreateDesign from './components/CreateDesign/CreateDesign.vue'
-import CountNumber from './components/CountNumber/CountNumber.vue'
+import TheHeader from '../components/Header/TheHeader.vue'
+import CreateDesign from '../components/CreateDesign/CreateDesign.vue'
+// import CountNumber from './components/CountNumber/CountNumber.vue'
 import domtoimage from 'dom-to-image-more'
 import { saveAs } from 'file-saver'
 
@@ -14,7 +14,8 @@ const toImageClick = () => {
 </script>
 
 <template>
-  <RouterView />
+  <TheHeader :toImageClick="toImageClick" />
+  <CreateDesign />
 </template>
 
 <style>
