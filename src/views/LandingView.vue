@@ -11,7 +11,7 @@ const route = useRoute();
     </div>
     <button
       class="w-80 h-16 bg-violet-300 rounded-3xl text-white font-medium text-3xl mb-5 mt-7 hover:bg-violet-500"
-      @click="router.push('/design')"
+      @click="router.push('/login')"
     >
       Create new design
     </button>

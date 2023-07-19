@@ -44,7 +44,7 @@ const createElement = (
   x2,
   y2,
   type,
-  options = { fill: 'white', fillStyle: 'hachure', roughness: 2 }
+  options = { fill: 'white', fillStyle: 'hachure', roughness: 0 }
 ) => {
   const roughElement =
     type == 'line'
