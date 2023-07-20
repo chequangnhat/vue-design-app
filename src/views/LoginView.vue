@@ -21,6 +21,7 @@ const submitLogin = async () => {
   if (response.data.message == 'Login successful') {
     loginStore.changeUserLoggedIn(userName.value)
     console.log('login store', loginStore.userLoggedIn)
+    localStorage.setItem('csrf_token', response.data.csrf_token);
   }
 
   if (loginStore.userLoggedIn != null) {
