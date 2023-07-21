@@ -22,12 +22,8 @@ const saveDesign = async () => {
   const response = await axios.post('http://127.0.0.1:8000/design_app/api/save_design/', {
     username: loginStore.userLoggedIn,
     design: elementJson
-  },{
-  headers: {
-    'X-CSRFToken': csrf_token,
-    user: loginStore.userLoggedIn
-  }
-})
+  },
+)
   // const testObj = JSON.parse(testJson)
   console.log("saveDesign", response)
 }

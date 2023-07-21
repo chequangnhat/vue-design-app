@@ -18,15 +18,21 @@ import { ref, onMounted, watch, onUpdated } from 'vue'
 
 import ColorStyleAdjuster from '../ColorStyleAdjuster/ColorStyleAdjuster.vue'
 
+import { useToolStore } from '../../stores/toolState.js'
+import { useElementStore } from '../../stores/elements.js'
+import { useLoginStore } from '../../stores/login.js'
+
+import axios from 'axios'
 import rough from 'roughjs'
 
 const generator = rough.generator()
 
-import { useToolStore } from '../../stores/toolState.js'
-import { useElementStore } from '../../stores/elements.js'
+
+
 
 const toolStore = useToolStore()
 const elementstore = useElementStore()
+const loginStore = useLoginStore()
 
 const canvas = ref(null)
 let rc = null // RoughCanvas instance
@@ -170,7 +176,7 @@ function handleResize() {
   windowHeight.value = window.innerHeight
 }
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('resize', handleResize)
 
   rc = rough.canvas(canvas.value)
@@ -178,6 +184,19 @@ onMounted(() => {
   // Set canvas size to fullscreen
   canvas.value.width = windowWidth.value
   canvas.value.height = windowHeight.value
+
+  const response = await axios.post('http://127.0.0.1:8000/design_app/api/get_design/', {
+    username: loginStore.userLoggedIn,
+  })
+  const newListElements = response.data.design
+  elementstore.setNewValueElement(newListElements)
+
+  console.log("newListElements",newListElements)
+  console.log("element store", elementstore.elements.elements[0])
+  // redraw(response.data.design)
+  // console.log('create desing user',loginStore.userLoggedIn)
+  // console.log('create desing response',response.data.design)
+
 })
 
 function redraw(listElements) {
@@ -214,7 +233,7 @@ watch(
   () => {
     // console.log('onUpdated elementstore watch')
     // console.log('selectedElement', selectedElement.value)
-    console.log('watch elementstore', elementstore.elements)
+    console.log('watch elementstore', elementstore.elements.elements[0])
     redraw(elementstore.elements.elements)
   },
   // { deep: true }

@@ -10,6 +10,7 @@ export const useElementStore = defineStore('elements', () => {
   }
 
   function setNewValueElement(newElements) {
+    elements.elements = []
     return elements.elements = newElements
   }
   function setNewValueElementAtIndex( index ,newElement ) {

@@ -15,7 +15,9 @@ const submitLogin = async () => {
   const response = await axios.post('http://127.0.0.1:8000/design_app/api/login/', {
     username: userName.value,
     password: password.value
-  })
+  },
+ 
+  )
   console.log('response', response.data.message)
 
   if (response.data.message == 'Login successful') {
