@@ -188,11 +188,12 @@ onMounted(async () => {
   const response = await axios.post('http://127.0.0.1:8000/design_app/api/get_design/', {
     username: loginStore.userLoggedIn,
   })
-  const newListElements = response.data.design
-  elementstore.setNewValueElement(newListElements)
 
-  console.log("newListElements",newListElements)
-  console.log("element store", elementstore.elements.elements[0])
+  const newListElements = JSON.parse(response.data.design)
+  // elementstore.setNewValueElement(newListElements)
+
+  console.log("data from backend", newListElements )
+  // console.log("element store", elementstore.elements.elements[0])
   // redraw(response.data.design)
   // console.log('create desing user',loginStore.userLoggedIn)
   // console.log('create desing response',response.data.design)
@@ -205,16 +206,16 @@ function redraw(listElements) {
   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height)
 
   //redraw all elements
-  console.log('redraw all elements',elementstore.elements.elements)
+  // console.log('redraw all elements',elementstore.elements.elements)
   listElements.forEach((element) => {
-    console.log('drawing element',element )
+    // console.log('drawing element',element )
     const { x1, y1, x2, y2, roughElement  } = element
     if( roughElement.shape == 'rectangle'){
-      console.log('rec')
+      // console.log('rec')
       const newRoughElement = generator.rectangle( x1, y1, x2 - x1, y2 - y1, roughElement['options'] )
       rc.draw(newRoughElement)
     }else if( roughElement.shape == 'line' ){
-      console.log('line')
+      // console.log('line')
       const newRoughElement = generator.line( x1, y1, x2, y2, roughElement['options'] )
       rc.draw(newRoughElement)
     }
@@ -234,6 +235,7 @@ watch(
     // console.log('onUpdated elementstore watch')
     // console.log('selectedElement', selectedElement.value)
     console.log('watch elementstore', elementstore.elements.elements[0])
+    console.log('watch elementstore', elementstore.elements.elements)
     redraw(elementstore.elements.elements)
   },
   // { deep: true }
