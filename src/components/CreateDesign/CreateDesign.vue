@@ -190,7 +190,7 @@ onMounted(async () => {
   })
 
   const newListElements = JSON.parse(response.data.design)
-  // elementstore.setNewValueElement(newListElements)
+  elementstore.setNewValueElement(newListElements)
 
   console.log("data from backend", newListElements )
   // console.log("element store", elementstore.elements.elements[0])
@@ -199,6 +199,31 @@ onMounted(async () => {
   // console.log('create desing response',response.data.design)
 
 })
+
+
+// function redraw(listElements) {
+//   //clear canvas
+//   const ctx = canvas.value.getContext('2d')
+//   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height)
+
+//   //redraw all elements
+//   // console.log('redraw all elements',elementstore.elements.elements)
+//   listElements.forEach((element) => {
+//     // console.log('drawing element',element )
+//     const { x1, y1, x2, y2, roughElement  } = element
+//     if( roughElement.shape == 'rectangle'){
+//       // console.log('rec')
+//       const newRoughElement = generator.rectangle( x1, y1, x2 - x1, y2 - y1, roughElement['options'] )
+//       rc.draw(newRoughElement)
+//     }else if( roughElement.shape == 'line' ){
+//       // console.log('line')
+//       const newRoughElement = generator.line( x1, y1, x2, y2, roughElement['options'] )
+//       rc.draw(newRoughElement)
+//     }
+    
+//   })
+// }
+
 
 function redraw(listElements) {
   //clear canvas
@@ -210,6 +235,9 @@ function redraw(listElements) {
   listElements.forEach((element) => {
     // console.log('drawing element',element )
     const { x1, y1, x2, y2, roughElement  } = element
+    delete roughElement.options.randomizer;
+    console.log("rough in redraw",roughElement.options)
+    
     if( roughElement.shape == 'rectangle'){
       // console.log('rec')
       const newRoughElement = generator.rectangle( x1, y1, x2 - x1, y2 - y1, roughElement['options'] )
@@ -229,13 +257,28 @@ watch(windowWidth, () => {
   redraw(elementstore.elements.elements)
 })
 
+
 watch(
   elementstore,
   () => {
     // console.log('onUpdated elementstore watch')
     // console.log('selectedElement', selectedElement.value)
-    console.log('watch elementstore', elementstore.elements.elements[0])
-    console.log('watch elementstore', elementstore.elements.elements)
+
+
+    const elementJson = JSON.stringify(elementstore.elements.elements)
+    console.log('elementJson', elementJson)
+    const elementObj = JSON.parse(elementJson)
+    console.log('elementObj', elementObj)
+
+
+    // const elementJson = complexObjectToString(elementstore.elements.elements)
+    // console.log('elementJson', elementJson)
+    // const elementObj = complexStringToObject(elementJson)
+    // console.log('elementObj', elementObj)
+
+    console.log('elementstore', elementstore.elements.elements)
+
+
     redraw(elementstore.elements.elements)
   },
   // { deep: true }
